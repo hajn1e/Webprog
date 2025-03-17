@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termékek</title>
+</head>
+<style>
+    table {
+        border: 1px solid black;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border:  1px solid black;
+        padding: 7px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
+<body>
+    <div id="atlag_ar"></div>
+    <div id="magasErtekeles"></div>
+    <div id="4,56Feletti"></div>
+    <script>
+        let termekek=[];
+        const URL='https://dummyjson.com/products';
+
+        document.addEventListener("DOMContentLoaded", init);
+
+        async function init() {
+            await loadData();
+            Kiiratas();
+            Kategoriak();
+            NemOtos();
+            Tablazat(termekek);
+            KepekTablazat(termekek);
+            TermekInfo(); 
+            Kereses();
+        }
+        async function loadData() {
+            try {
+                const response = await fetch(URL);
+                const data=await response.json()
+                termekek=data.products;
+                
+            } catch (error) {
+                console.error("Hiba történt az adatok lekérésekor:", error);
+            }
+        }
+
+        function Kiiratas(){
+            const p=document.createElement("p");
+            document.body.appendChild(p);
+            p.innerText=termekek.map(termek=>termek.title).join(', ');
+        }
+
+        function Kategoriak(){
+            const furnitureItems = termekek.filter(termek => termek.category === "furniture");
+            const ul=document.createElement("ul");
+            document.body.appendChild(ul)
+            ul.innerHTML='';
+
+            if (furnitureItems.length===0) return;
+
+            const randomFurnitureIndex = Math.floor(Math.random() * furnitureItems.length);
+            
+            furnitureItems.forEach((termek, index) => {
+                const li=document.createElement("li"); 
+                li.textContent=termek.title;
+                
+                if (index === randomFurnitureIndex) {
+                li.style.fontWeight = 'bold';
+                }
+
+                ul.appendChild(li);
+            });
+
+            const BeautyItems=termekek.filter(termek=>termek.category==="beauty");
+            const ol=document.createElement("ol");
+            document.body.appendChild(ol);
+            ol.innerHTML='';
+
+            if (BeautyItems.length===0) return;
+            const randomBeautyIndex=Math.floor(Math.random() * BeautyItems.length);
+            BeautyItems.forEach((termek,index)=>{
+                const li=document.createElement("li"); 
+                li.textContent=termek.title;
+
+                if (index === randomBeautyIndex) {
+                li.style.fontWeight = 'bold';
+                }
+
+                ol.appendChild(li);
+
+            });
+        }
+
+        function NemOtos(){
+            const nemOtosTermekek = termekek.filter(termek => termek.rating !== 5);
+            const ul = document.createElement("ul");
+            document.body.appendChild(ul);
+            ul.innerHTML = '';
+
+            nemOtosTermekek.forEach(termek => {
+                const li = document.createElement("li");
+                li.textContent = `${termek.title} - Rating: ${termek.rating}`;
+                ul.appendChild(li);
+            });
+        }
+
+
+        function Tablazat(termekek){
+            const table = document.createElement("table");
+            document.body.appendChild(table)
+            table.innerHTML = `
+                <tr>
+                    <th>Név</th>
+                    <th>Márka</th>
+                    <th>Készlet mennyiség</th>
+                </tr>
+            `;
+ 
+            termekek.forEach((termek, index) => {
+                    
+                
+                console.log(termek);
+                const ujsor = table.insertRow();
+                const cella1 = ujsor.insertCell();
+                cella1.innerText = termek.title;
+                const cella2 = ujsor.insertCell();
+                cella2.innerText = termek.brand;
+                const cella3 = ujsor.insertCell();
+                cella3.innerText=termek.stock;
+
+                if (termek.stock > 11) {
+                ujsor.style.backgroundColor = "blue";
+                ujsor.style.color = "white";
+            
+        }})
+        }
+        
+        function KepekTablazat(termekek) {
+        const table = document.createElement("table");
+        document.body.appendChild(table);
+
+        let row;
+        termekek.forEach((termek, index) => {
+            if (index % 5 === 0) {
+                row = table.insertRow();
+            }
+            const cell = row.insertCell();
+            const img = document.createElement("img");
+            img.src = termek.thumbnail;
+            img.style.width = "80px";
+            cell.appendChild(img);
+        });
+
+    }
+
+    function TermekInfo(){
+    const under111 = termekek.filter(termek => termek.price < 111);
+    const averagePrice = under111.reduce((sum, termek) => sum + termek.price, 0) / under111.length;
+
+    document.getElementById("atlag_ar").innerHTML=`111 dollár alatti termékek átlagos ára: $${averagePrice.toFixed(2)}`;
+
+    
+    const highestRatedProduct = termekek.reduce((max, termek) => {
+        return (termek.rating > max.rating) ? termek : max;
+    }, termekek[0]);
+
+    document.getElementById("magasErtekeles").innerHTML=`Legmagasabb értékelésű termék: ${highestRatedProduct.title}`;
+
+    const highRatedCount = termekek.filter(termek => termek.rating > 4.56).length;
+
+    document.getElementById("4,56Feletti").innerHTML=`4,56 feletti értékelésű termékek száma: ${highRatedCount}`;
+
+    
+    }
+
+    function Kereses(){
+    const searchInput = document.createElement("input");
+    const searchButton = document.createElement("button");
+    searchButton.textContent = "Keresés";
+    document.body.appendChild(searchInput);
+    document.body.appendChild(searchButton);
+
+    searchButton.addEventListener("click", () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filteredProducts = termekek.filter(termek => 
+            termek.title.toLowerCase().includes(searchTerm) || termek.description.toLowerCase().includes(searchTerm)
+        );
+
+        const resultList = document.createElement("ul");
+        document.body.appendChild(resultList);
+        resultList.innerHTML = '';
+
+        filteredProducts.forEach(termek => {
+            const li = document.createElement("li");
+            li.textContent = termek.title;
+            resultList.appendChild(li);
+        });
+
+        if (filteredProducts.length === 0) {
+            resultList.innerHTML = '<li>Nincs találat</li>';
+        }
+    });
+}
+    
+    </script>
+</body>
+</html>
