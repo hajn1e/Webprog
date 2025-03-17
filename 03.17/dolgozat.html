@@ -199,7 +199,7 @@
 
         filteredProducts.forEach(termek => {
             const li = document.createElement("li");
-            li.textContent = termek.title;
+            li.textContent = termek.title + ' - ' + termek.description;
             resultList.appendChild(li);
         });
 
